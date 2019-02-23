@@ -1,6 +1,6 @@
-# example
+# example trapperkeeper app
 
-A trapperkeeper web app designed to ... well, that part is up to you.
+Heavily-commented scaffold trapperkeeper app generated via `lein new trapperkeeper`
 
 ## Usage
 
@@ -22,9 +22,14 @@ This will allow you to launch the app from the Clojure REPL. You can then make
 changes and run `(reset)` to reload the app or `(stop)` to shutdown the app.
 
 In addition, the functions `(context)` and `(print-context)` are available to
-print out the current trapperkeeper application context. Both of these take an
+access or print out the current trapperkeeper application context. Both of these take an
 optional array of keys as a parameter, which is used to retrieve a nested
 subset of the context map.
+
+Try `(keys (context))` to see the top-level keys.
+Try `(context [:service-contexts :ConfigService])` to
+fetch the `:service-contexts` entry in the context, and
+fetch the `:ConfigServices` entry from that.
 
 ## License
 

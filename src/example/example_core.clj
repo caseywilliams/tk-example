@@ -1,6 +1,7 @@
 (ns example.example-core)
 
+;; These are core methods for use in the example service; they are not used in other services.
 (defn hello
-  "Say hello to caller"
-  [caller]
-  (format "Hello, %s!" caller))
+  "Say hello to person"
+  [person]
+  (format "Hello, %s!" person))

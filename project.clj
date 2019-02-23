@@ -10,38 +10,78 @@
 
   :pedantic? :abort
 
+  ;; Leinengen plugins:
+  :plugins [;; lein-parent allows us to inherit package verisons from clj-parent
+            [lein-parent "0.3.1"]]
+
+  ;; clj-parent is like puppet-runtime - it controls versions of several dependencies
   :parent-project {:coords [puppetlabs/clj-parent "1.7.3"]
                    :inherit [:managed-dependencies]}
 
-  :plugins [[lein-parent "0.3.1"]
-            [puppetlabs/i18n "0.8.0"]]
-
-  :dependencies [[org.clojure/clojure]
-
-                 ;; explicit versions of deps that would cause transitive dep conflicts
-                 [org.clojure/tools.reader "1.2.1"]
-                 [slingshot]
-                 [clj-time]
-                 ;; end explicit versions of deps that would cause transitive dep conflicts
-                 [compojure "1.5.0"]
-                 [org.clojure/tools.logging "0.4.0"]
+  ;;
+  ;; Dependency packages:
+  ;;
+  :dependencies [;; JRuby helpers:
                  [puppetlabs/jruby-utils "2.0.0"]
                  [puppetlabs/jruby-deps "9.1.16.0-1"]
-                 [puppetlabs/trapperkeeper]
-                 [puppetlabs/kitchensink]
-                 [puppetlabs/trapperkeeper-webserver-jetty9 ~tk-jetty9-version]]
 
-  :profiles {:dev {:source-paths ["dev"]
+                 ;;
+                 ;; Versions below are provided by clj-parent:
+                 ;;
+
+                 ;; Clojure itself
+                 [org.clojure/clojure]
+                 ;; Reads serialized data from Extensible Data Notation (EDN)
+                 ;; https://learnxinyminutes.com/docs/edn/
+                 [org.clojure/tools.reader]
+                 ;; Logging
+                 [org.clojure/tools.logging]
+                 ;; Web server
+                 [puppetlabs/trapperkeeper-webserver-jetty9]
+                 ;; URL routing library
+                 [compojure]
+                 ;; Enhanced try and throw methods
+                 [slingshot]
+                 ;; Date and time library
+                 [clj-time]
+                 ;; Improved stack traces
+                 [clj-stacktrace]
+                 ;; General utilities
+                 [puppetlabs/kitchensink]
+                 ;; Trapperkeeper itself
+                 [puppetlabs/trapperkeeper]]
+
+  ;; Leiningen profiles allow you to load development dependencies in certain
+  ;; contexts only.
+  ;; See https://github.com/technomancy/leiningen/blob/master/doc/PROFILES.md
+  ;; The `:dev` profile is for local development tooling (building and testing)
+  :profiles {:dev {
+                   ;; Makes leiningen look under ./dev for source code, in
+                   ;; addition to ./src. This loads helpers for use in
+                   ;; controlling trapperkeeper from the repl, like `go`; see
+                   ;; the readme and ./dev/dev-resource.clj.
+                   ;; See https://github.com/technomancy/leiningen/blob/master/doc/MIXED_PROJECTS.md#source-layout
+                   :source-paths ["dev"]
                    :dependencies [[puppetlabs/trapperkeeper ~tk-version :classifier "test" :scope "test"]
                                   [puppetlabs/kitchensink ~ks-version :classifier "test" :scope "test"]
                                   [clj-http "3.0.0"]
+                                  ;; Get nrepl from clj-parent:
+                                  ;; N.B. nrepl is configured through a built-in trapperkeeper service. It's
+                                  ;; loaded in bootstrap.cfg and configured in config.conf (these are in the
+                                  ;; dev-resources folder)
+                                  [org.clojure/tools.nrepl]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [ring-mock "0.1.5"]]}}
 
+  ;; Makes `lein repl` start in the `user` namespace, which gets helpers from ./dev/user.clj
   :repl-options {:init-ns user}
 
-  :aliases {"tk" ["trampoline" "run" "--config" "dev-resources/config.conf"]}
-
+  ;; Makes `lein run` run the main trapperkeeper function
   :main puppetlabs.trapperkeeper.main
 
+  ;; Makes `lein tk` run `lein run` to start trapperkeeper and pass it the
+  ;; config files in dev-resources. It also wraps the `run` command with
+  ;; `trampoline`, which allows leiningen to quit after the app starts so that
+  ;; only one JVM process is running.
+  :aliases {"tk" ["trampoline" "run" "--config" "dev-resources/config.conf"]}
   )
